@@ -19,7 +19,16 @@ class PerformTurnCommand(Command):
 
     def run(self):
         self.player.escape = False
+        # see if game ends
+
+        # TODO: 拉莱耶判断
+
+        # TODO: san check
+
+        # draw card
         DrawToHandCommand(self.player, 1).run()
+        
+        # use card
         top_deck = self.player.hand_deck.get_top(1)
         card = top_deck[0]
         card.exec(self.player)

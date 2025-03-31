@@ -14,6 +14,8 @@ class Game:
         
         self.players = []
         self.player_count = 0
+
+        self.onlyWinner = None
         
     
     def init_players(self, player_count):
