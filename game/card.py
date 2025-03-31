@@ -6,6 +6,21 @@ from common.logger import Logger
 from game.effect import *
 
 
+@singleton
+class CardBuilder:
+    def __init__(self):
+        self.cards = []
+    
+    def build(self):
+        self.cards = []
+        config = Config().CARD_CONFIG
+        for idx, item in config.items():
+            class_name_str = "Card" + "{:02d}".format(idx)
+            if class_name_str in globals():
+                for _ in range(item["count"]):
+                    card = globals()[class_name_str]()
+                    self.cards.append(card)
+
 class Card:
     def __init__(self, point, name, isMad):
         self.point = point
@@ -22,276 +37,161 @@ class Card:
         print(f"player{player.id} 打出 {self}")
         
 
-class Card00(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[0]["point"], 
-                         Config().CARD_CONFIG[0]["name"], 
-                         Config().CARD_CONFIG[0]["isMadCard"])
-        self.effect = Lucid00()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-
-       
-class Card01(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[1]["point"], 
-                         Config().CARD_CONFIG[1]["name"], 
-                         Config().CARD_CONFIG[1]["isMadCard"])
-        self.effect = Lucid01()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-        
-        
-        
-class Card02(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[2]["point"], 
-                         Config().CARD_CONFIG[2]["name"], 
-                         Config().CARD_CONFIG[2]["isMadCard"])
-        self.effect = Lucid02()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-        
-        
-        
-class Card03(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[3]["point"], 
-                         Config().CARD_CONFIG[3]["name"], 
-                         Config().CARD_CONFIG[3]["isMadCard"])
-        self.effect = Lucid03()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-            
-            
-        
-class Card04(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[4]["point"], 
-                         Config().CARD_CONFIG[4]["name"], 
-                         Config().CARD_CONFIG[4]["isMadCard"])
-        self.effect = Lucid04()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-        
-        
-class Card05(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[5]["point"], 
-                         Config().CARD_CONFIG[5]["name"], 
-                         Config().CARD_CONFIG[5]["isMadCard"])
-        self.effect = Lucid05()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-        
-        
-class Card06(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[6]["point"], 
-                         Config().CARD_CONFIG[6]["name"], 
-                         Config().CARD_CONFIG[6]["isMadCard"])
-        self.effect = Lucid06()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-        
-        
-class Card07(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[7]["point"], 
-                         Config().CARD_CONFIG[7]["name"], 
-                         Config().CARD_CONFIG[7]["isMadCard"])
-        self.effect = Lucid07()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-        
-        
-class Card08(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[8]["point"], 
-                         Config().CARD_CONFIG[8]["name"], 
-                         Config().CARD_CONFIG[8]["isMadCard"])
-        self.effect = Lucid08()
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect.exec(player)
-        
-        
-class Card11(Card):
-    def __init__(self):
-        super().__init__(Config().CARD_CONFIG[11]["point"], 
-                         Config().CARD_CONFIG[11]["name"], 
-                         Config().CARD_CONFIG[11]["isMadCard"])
-        self.effect = [Lucid01(), Mad11()]
-        
-    def exec(self, player):
-        super().exec(player)
-        self.effect[choose()].exec(player)
-
-
-def choose():
-    return 1
-
-
-@singleton
-class CardBuilder:
-    def __init__(self):
-        self.cards = []
+class LucidCard(Card):
+    def __init__(self, point, name, effect):
+        super().__init__(point, name, False)
+        self.effect = effect
     
-    def build(self):
-        self.cards = []
-        config = Config().CARD_CONFIG
-        for idx, item in config.items():
-            class_name_str = "Card" + "{:02d}".format(idx)
-            if class_name_str in globals():
-                for _ in range(item["count"]):
-                    card = globals()[class_name_str]()
-                    self.cards.append(card)
-    
-    
-# 
+    def exec(self, player):
+        super().exec(player)
+        self.effect.exec(player)
+
+
 class MadCard(Card):
-    def __init__(self, index):
-        cfg = Config().CARD_CONFIG[index]
-        Card.__init__(cfg["point"], cfg["name"], cfg["description"], cfg["isMad"])
-        self.madDescription = cfg["madDescription"]
+    def __init__(self, point, name, lucidEffect, madEffect):
+        super().__init__(point, name, True)
+        self.lucidEffect = lucidEffect
+        self.madEffect = madEffect
 
     def useMadEffect(self, player)->int:
         return 1
+    
+    def exec(self, player):
+        super().exec(player)
+        if self.useMadEffect(player):
+            self.madEffect.exec(player)
+        else:
+            self.lucidEffect.exec(player)
 
+
+class Card00(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[0]["point"], 
+                         Config().CARD_CONFIG[0]["name"], Lucid00())
+
+       
+class Card01(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[1]["point"], 
+                         Config().CARD_CONFIG[1]["name"], Lucid01())
+        
+        
+    
+class Card02(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[2]["point"], 
+                         Config().CARD_CONFIG[2]["name"], Lucid02())
+        
+        
+        
+class Card03(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[3]["point"], 
+                         Config().CARD_CONFIG[3]["name"], Lucid03())
+
+            
+            
+        
+class Card04(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[4]["point"], 
+                         Config().CARD_CONFIG[4]["name"], Lucid04())
+
+        
+        
+class Card05(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[5]["point"], 
+                         Config().CARD_CONFIG[5]["name"], Lucid05())
+
+        
+        
+class Card06(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[6]["point"], 
+                         Config().CARD_CONFIG[6]["name"], Lucid06())
+
+        
+        
+class Card07(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[7]["point"], 
+                         Config().CARD_CONFIG[7]["name"], Lucid07())
+
+        
+        
+class Card08(LucidCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[8]["point"], 
+                         Config().CARD_CONFIG[8]["name"], Lucid08())
 
 # 拉莱耶
-class Card10(MadCard, Card00):
+class Card10(MadCard):
     def __init__(self):
-        MadCard.__init__(10)
+        super().__init__(Config().CARD_CONFIG[10]["point"], 
+                         Config().CARD_CONFIG[10]["name"], Lucid00(), Mad10())
         
-    def exec(self, player):
-        if self.useMadEffect(player):
-            
-            
-            pass
-        else:
-            Card00.exec(self, player)
+    
 
 
 # 异教徒
-class Card11(MadCard, Card01):
+class Card11(MadCard):
     def __init__(self):
-        MadCard.__init__(11)
-        
-    def exec(self, player):
-        if not self.useMadEffect(player):
-            Card01.exec(player)
-        else:
-            Card.exec(player)
-            target = Game().choose_player(player)
-
-            card = target.get_hand_card()
-            
-            if card.point == 1:
-                Logger().info(f"猜中了牌的点数({guess}): {card}")
-                target.die()
-            else:
-                # TODO: need to guess here
-                guess = random.randint(0, 8)
-                if card.point == guess:
-                    Logger().info(f"猜中了牌的点数({guess}): {card}")
-                    target.die()
-                else:
-                    Logger().info(f"猜了牌的点数({guess})，猜错了")
+        super().__init__(Config().CARD_CONFIG[11]["point"], 
+                         Config().CARD_CONFIG[11]["name"], Lucid01(), Mad11())
 
 
 # 夜魇
-class Card12(MadCard, Card02):
+class Card12(MadCard):
     def __init__(self):
-        MadCard.__init__(12)
+        super().__init__(Config().CARD_CONFIG[12]["point"], 
+                         Config().CARD_CONFIG[12]["name"], Lucid02(), Mad12())
         
-    def exec(self, player):
-        if not self.useMadEffect(player):
-            Card02.exec(player)
-        else:
-            Card.exec(player)
 
 
-
-
-class Card13(MadCard, Card03):
+class Card13(MadCard):
     def __init__(self):
-        MadCard.__init__(13)
+        super().__init__(Config().CARD_CONFIG[13]["point"], 
+                         Config().CARD_CONFIG[13]["name"], Lucid03(), Mad13())
         
-    def exec(self, player):
-        if self.useMadEffect(player):
-            pass
-        else:
-            Card03.exec(self, player)
 
 
 # 《死灵之书》
-class Card14(MadCard, Card04):
+class Card14(MadCard):
     def __init__(self):
-        MadCard.__init__(14)
+        super().__init__(Config().CARD_CONFIG[14]["point"], 
+                         Config().CARD_CONFIG[14]["name"], Lucid04(), Mad14())
         
-    def exec(self, player):
-        if self.useMadEffect(player):
-            pass
-        else:
-            Card04.exec(self, player)
 
 
 # 偷渡虫
-class Card15(MadCard, Card05):
+class Card15(MadCard):
     def __init__(self):
-        MadCard.__init__(15)
+        super().__init__(Config().CARD_CONFIG[15]["point"], 
+                         Config().CARD_CONFIG[15]["name"], Lucid05(), Mad15())
         
-    def exec(self, player):
-        if self.useMadEffect(player):
-            pass
-        else:
-            Card05.exec(self, player)
 
-class Card16(MadCard, Card06):
+class Card16(MadCard):
     def __init__(self):
-        MadCard.__init__(16)
+        super().__init__(Config().CARD_CONFIG[16]["point"], 
+                         Config().CARD_CONFIG[16]["name"], Lucid06(), Mad16())
         
-    def exec(self, player):
-        if self.useMadEffect(player):
-            pass
-        else:
-            Card06.exec(self, player)
 
-class Card17(MadCard, Card07):
+class Card17(MadCard):
     def __init__(self):
-        MadCard.__init__(17)
+        super().__init__(Config().CARD_CONFIG[17]["point"], 
+                         Config().CARD_CONFIG[17]["name"], Lucid07(), Mad17())
         
-    def exec(self, player):
-        if self.useMadEffect(player):
-            pass
-        else:
-            Card07.exec(self, player)
 
-class Card18(MadCard, Card08):
+class Card18(MadCard):
     def __init__(self):
-        MadCard.__init__(18)
-        
-    def exec(self, player):
-        if self.useMadEffect(player):
-            pass
-        else:
-            Card08.exec(self, player)
+        super().__init__(Config().CARD_CONFIG[18]["point"], 
+                         Config().CARD_CONFIG[18]["name"], Lucid08(), Mad18())
 
+
+if __name__ == "__main__":
+    cb = CardBuilder()
+    cb.build()
+    cards = cb.cards
+    for c in cards:
+        print(c)
