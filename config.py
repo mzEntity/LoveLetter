@@ -22,6 +22,8 @@ class Config:
                 "count": item["count"],
                 "isMadCard": item["isMadCard"]
             }
+            if cfg["isMadCard"]:
+                cfg["madDescription"] = item["madDescription"]
             
             self.CARD_CONFIG[item["index"]] = cfg
                 
