@@ -48,17 +48,14 @@ class Deck:
     def get_all(self):
         return self.get_top(len(self.cards))
         
-    
     def put_top(self, deck):
         deck.cards.extend(self.cards)
         self.cards = deck.cards
         deck.cards = []
         
-        
     def put_bottom(self, deck):
         self.cards.extend(deck.cards)
         deck.cards = []
-        
             
     def shuffle(self):
         random.shuffle(self.cards)

@@ -24,6 +24,7 @@ class CardBuilder:
 
 class Card:
     def __init__(self, index, point, name, isMad):
+        self.id = index
         self.point = point
         self.name = name
         self.isMad = isMad
@@ -189,7 +190,7 @@ class Card18(MadCard):
 
 class Card20(MadCard):
     def __init__(self):
-        super().__init__(Config().CARD_CONFIG[20]["point"],
+        super().__init__(20, Config().CARD_CONFIG[20]["point"],
                          Config().CARD_CONFIG[20]["name"], Mad20(), Mad20())
 
 

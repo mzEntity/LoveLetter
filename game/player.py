@@ -26,6 +26,12 @@ class Player:
             Logger().warning("调用get_hand_card时手牌数不为1，这可能导致一些问题")
         return self.hand_deck[0]
     
+    def add_card_to_discard(self, deck):
+        for c in deck:
+            if c.isMad:
+                self.isMad = True
+                break
+        self.discard_deck.put_bottom(deck)
+    
     def die(self):
-        if self.protectedByNecro: return
         self.dead = True

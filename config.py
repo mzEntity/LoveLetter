@@ -29,9 +29,10 @@ class Config:
                 
     def init_effect(self):
         self.EFFECT_CONFIG = {}
-        effect_config = read_json(self.CARD_CONFIG_PATH)
+        effect_config = read_json(self.EFFECT_CONFIG_PATH)
         for item in effect_config:
             cfg = {
                 "description": item["description"],
             }
             self.EFFECT_CONFIG[item["index"]] = cfg
+        # print(self.EFFECT_CONFIG)

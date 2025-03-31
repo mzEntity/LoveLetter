@@ -156,6 +156,9 @@
         "index": 20,
         "point": 0,
         "name": "",
-        "count":0
+        "count": 0,
+        "isMadCard": true,
+        "description": "如果你打出本卡牌，你该轮出局。",
+        "madDescription": "如果你打出本卡牌，你该轮出局。"
     }
 ]
