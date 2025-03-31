@@ -16,9 +16,6 @@ class Server:
         for i in range(self.player_count):
             client_socket, client_address = server_sock.accept()
             sock = MySocket(client_socket)
-            sock.sendDict({
-                "id": i
-            })
             self.client_sock_dict[i] = sock
             print(f"client id:{i} 已连接")
             
@@ -28,6 +25,10 @@ class Server:
 if __name__ == "__main__":
     s = Server(3)
     s.accept_all()
+    for k, sock in s.client_sock_dict.items():
+        sock.sendDict({
+            "id": k
+        })
     turn = 0
     while True:
         if not s.client_sock_dict:

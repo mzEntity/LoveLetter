@@ -12,26 +12,26 @@ class Client:
         try:
             client_socket.connect(Config().SERVER_ADDRESS)
             self.sock = MySocket(client_socket)
-            re = self.sock.recvDict()
-            self.id = re["id"]
-            print(f"我是{self.id}号玩家！")
         except Exception as e:
             print(f"连接服务器时出错: {e}")
             
-    def send(self, msg):
-        self.sock.sendDict({
-            "msg": msg
-        })
+        
         
 
 if __name__ == "__main__":
     c = Client()
     c.connect()
+    re = c.sock.recvDict()
+    c.id = re["id"]
+    print(f"我是{c.id}号玩家！")
+    
     while True:
         d = c.sock.recvDict()
         if d["type"] == "invite":
             msg = input(">")
-            c.send(msg)
+            c.sock.sendDict({
+                "msg": msg
+            })
             if msg == "quit":
                 break
         else:
