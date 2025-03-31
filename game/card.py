@@ -255,3 +255,136 @@ class ExchangeHandCommand(Command):
         self.player1.hand_deck.put_top(deck2)
         self.player2.hand_deck.put_top(deck1)
         
+
+
+# 
+class MadCard(Card):
+    def __init__(self, index):
+        cfg = Config().CARD_CONFIG[index]
+        Card.__init__(cfg["point"], cfg["name"], cfg["description"], cfg["isMad"])
+        self.madDescription = cfg["madDescription"]
+
+    def useMadEffect(self, player)->int:
+        return 1
+
+
+# 拉莱耶
+class Card10(MadCard, Card00):
+    def __init__(self):
+        MadCard.__init__(10)
+        
+    def exec(self, player):
+        if self.useMadEffect(player):
+            
+            
+            pass
+        else:
+            Card00.exec(self, player)
+
+
+# 异教徒
+class Card11(MadCard, Card01):
+    def __init__(self):
+        MadCard.__init__(11)
+        
+    def exec(self, player):
+        if not self.useMadEffect(player):
+            Card01.exec(player)
+        else:
+            Card.exec(player)
+            target = Game().choose_player(player)
+
+            card = target.get_hand_card()
+            
+            if card.point == 1:
+                Logger().info(f"猜中了牌的点数({guess}): {card}")
+                target.die()
+            else:
+                # TODO: need to guess here
+                guess = random.randint(0, 8)
+                if card.point == guess:
+                    Logger().info(f"猜中了牌的点数({guess}): {card}")
+                    target.die()
+                else:
+                    Logger().info(f"猜了牌的点数({guess})，猜错了")
+
+
+# 夜魇
+class Card12(MadCard, Card02):
+    def __init__(self):
+        MadCard.__init__(12)
+        
+    def exec(self, player):
+        if not self.useMadEffect(player):
+            Card02.exec(player)
+        else:
+            Card.exec(player)
+
+
+
+
+class Card13(MadCard, Card03):
+    def __init__(self):
+        MadCard.__init__(13)
+        
+    def exec(self, player):
+        if self.useMadEffect(player):
+            pass
+        else:
+            Card03.exec(self, player)
+
+
+# 《死灵之书》
+class Card14(MadCard, Card04):
+    def __init__(self):
+        MadCard.__init__(14)
+        
+    def exec(self, player):
+        if self.useMadEffect(player):
+            pass
+        else:
+            Card04.exec(self, player)
+
+
+# 偷渡虫
+class Card15(MadCard, Card05):
+    def __init__(self):
+        MadCard.__init__(15)
+        
+    def exec(self, player):
+        if self.useMadEffect(player):
+            pass
+        else:
+            Card05.exec(self, player)
+
+class Card16(MadCard, Card06):
+    def __init__(self):
+        MadCard.__init__(16)
+        
+    def exec(self, player):
+        if self.useMadEffect(player):
+            pass
+        else:
+            Card06.exec(self, player)
+
+class Card17(MadCard, Card07):
+    def __init__(self):
+        MadCard.__init__(17)
+        
+    def exec(self, player):
+        if self.useMadEffect(player):
+            pass
+        else:
+            Card07.exec(self, player)
+
+class Card18(MadCard, Card08):
+    def __init__(self):
+        MadCard.__init__(18)
+        
+    def exec(self, player):
+        if self.useMadEffect(player):
+            pass
+        else:
+            Card08.exec(self, player)
+
+
