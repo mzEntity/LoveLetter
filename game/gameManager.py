@@ -8,8 +8,7 @@ class GameManager:
         
         self.game = Game()
         self.game.init_players(self.player_count)
-        CardBuilder().build()
-        self.game.init_cards(CardBuilder().cards)
+        self.game.init_cards(CardBuilder())
                 
         
     def start(self):

@@ -11,6 +11,7 @@ class Player:
         self.dead = False
         self.skipSanCheck = False
         self.protectedByNecro = False
+        self.isMad = False
         
     def __repr__(self):
         if self.dead:
