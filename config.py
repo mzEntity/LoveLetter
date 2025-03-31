@@ -1,6 +1,7 @@
 from common.singleton import singleton
 from common.utils import read_json
 
+@singleton
 class Config:
     def __init__(self):
         self.CARD_CONFIG_PATH = "config/cards.json"

@@ -1,58 +1,62 @@
 import socket
-import threading
+from config import Config
+from common.communicate import MySocket
 
-# 存储所有客户端连接
-clients = {}
+class Server:
+    def __init__(self, player_count):
+        self.player_count = player_count
+        self.client_sock_dict = {}
+        
+    def accept_all(self):
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_sock.bind(Config().SERVER_ADDRESS)
+        server_sock.listen(self.player_count)
+        print("服务器已启动，等待客户端连接...")
 
-def broadcast_message(sender, message):
-    """广播消息给除发送者外的所有客户端"""
-    for client_name, client_socket in clients.items():
-        if client_name != sender:
-            try:
-                client_socket.sendall(message.encode('utf-8'))
-            except:
-                # 如果发送失败，可能是客户端断开连接
-                print(f"无法发送消息给 {client_name}")
-                del clients[client_name]
-                client_socket.close()
+        for i in range(self.player_count):
+            client_socket, client_address = server_sock.accept()
+            sock = MySocket(client_socket)
+            sock.sendDict({
+                "id": i
+            })
+            self.client_sock_dict[i] = sock
+            print(f"client id:{i} 已连接")
+            
+        print("已全部连接")
 
-def handle_client(client_socket, client_name):
-    """处理单个客户端的逻辑"""
-    try:
-        while True:
-            # 接收客户端消息
-            message = client_socket.recv(1024).decode('utf-8')
-            if not message:
-                print(f"{client_name} 断开连接")
-                del clients[client_name]
-                break
-
-            # 广播消息给其他客户端
-            print(f"{client_name} 出牌: {message}")
-            broadcast_message(client_name, f"{client_name} 出牌: {message}")
-    except Exception as e:
-        print(f"{client_name} 出现错误: {e}")
-    finally:
-        # 客户端断开连接时清理资源
-        if client_name in clients:
-            del clients[client_name]
-        client_socket.close()
-
-def start_server():
-    """启动服务端"""
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('0.0.0.0', 12345))
-    server.listen(5)
-    print("服务器已启动，等待客户端连接...")
-
-    while True:
-        client_socket, client_address = server.accept()
-        client_name = client_socket.recv(1024).decode('utf-8')  # 接收客户端名称
-        clients[client_name] = client_socket
-        print(f"{client_name} 已连接")
-
-        # 启动线程处理该客户端
-        threading.Thread(target=handle_client, args=(client_socket, client_name)).start()
 
 if __name__ == "__main__":
-    start_server()
+    s = Server(3)
+    s.accept_all()
+    turn = 0
+    while True:
+        if not s.client_sock_dict:
+            break
+        cur_idx = turn % s.player_count
+        if cur_idx not in s.client_sock_dict:
+            turn += 1
+            continue
+        s.client_sock_dict[cur_idx].sendDict({
+            "type": "invite"
+        })
+        re = s.client_sock_dict[cur_idx].recvDict()
+        print(re)
+        if re["msg"] == "quit":
+            for id, sock in s.client_sock_dict.items():
+                sock.sendDict({
+                    "type": "msg",
+                    "msg": f"bye bye player {cur_idx}."
+                })
+            del s.client_sock_dict[cur_idx]
+        else:
+            for id, sock in s.client_sock_dict.items():
+                sock.sendDict({
+                    "type": "msg",
+                    "msg": f"player{cur_idx} says: {re['msg']}"
+                })
+        turn += 1
+                
+            
+        
+        
+        
