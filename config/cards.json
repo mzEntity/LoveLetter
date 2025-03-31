@@ -151,5 +151,11 @@
         "isMadCard": true,
         "description": "如果你打出或弃掉本卡牌，你该轮出局。",
         "madDescription": "只有当你在弃牌区中有至少2张异界卡牌时才能使用本效果。如果你使用本效果，你活的游戏胜利。"
+    },
+    {
+        "index": 20,
+        "point": 0,
+        "name": "",
+        "count":0
     }
 ]

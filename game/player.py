@@ -9,6 +9,9 @@ class Player:
         
         self.escape = False
         self.dead = False
+        self.skipSanCheck = False
+        self.protectedByNecro = False
+        self.isMad = False
         
     def __repr__(self):
         if self.dead:
@@ -24,4 +27,5 @@ class Player:
         return self.hand_deck[0]
     
     def die(self):
+        if self.protectedByNecro: return
         self.dead = True

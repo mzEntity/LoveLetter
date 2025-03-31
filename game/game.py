@@ -14,6 +14,10 @@ class Game:
         
         self.players = []
         self.player_count = 0
+
+        self.onlyWinner = None
+        self.isDeckReversed = False
+        self.rlyehPlayer:None|Player = None
         
     
     def init_players(self, player_count):
@@ -23,8 +27,9 @@ class Game:
             self.players.append(Player(i))
             
             
-    def init_cards(self, card_list):
-        self.public_deck = Deck(card_list[:])
+    def init_cards(self, card_builder):
+        self.public_deck = Deck(card_builder.cards[:])
+        self.special_deck = Deck([card_builder.cardEgg])
 
             
     def game_over(self, reason):
@@ -48,3 +53,9 @@ class Game:
             return chosen
         Logger().info(f"选择了player{player.id}")
         return player
+    
+    def choose_any_player(self, player, filter = None):
+        pass
+
+    def choose_other_player(self, player, filter = None):
+        pass
