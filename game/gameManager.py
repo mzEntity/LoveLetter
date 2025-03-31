@@ -8,13 +8,13 @@ class GameManager:
         
         self.game = Game()
         self.game.init_players(self.player_count)
-        CardBuilder().build()
-        self.game.init_cards(CardBuilder().cards)
+        self.game.init_cards(CardBuilder())
                 
         
     def start(self):
         for i in range(self.player_count):
             DrawToHandCommand(self.game.players[i], 1).run()
+
         while not self.game.over:
             self.one_round()
     
@@ -33,7 +33,10 @@ class GameManager:
     def one_turn(self, player):
         id = player.id
         print(f"player {id} start")
+        
+
         PerformTurnCommand(player).run()
+        # if game ends, calc result now
     
     
 if __name__ == "__main__":

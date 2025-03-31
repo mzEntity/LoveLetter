@@ -9,10 +9,11 @@ from game.effect import *
 @singleton
 class CardBuilder:
     def __init__(self):
+        self.cardEgg = Card20()
         self.cards = []
+        self.build()
     
     def build(self):
-        self.cards = []
         config = Config().CARD_CONFIG
         for idx, item in config.items():
             class_name_str = "Card" + "{:02d}".format(idx)
@@ -131,8 +132,6 @@ class Card10(MadCard):
         super().__init__(9, Config().CARD_CONFIG[10]["point"], 
                          Config().CARD_CONFIG[10]["name"], Lucid00(), Mad10())
         
-    
-
 
 # 异教徒
 class Card11(MadCard):
@@ -147,7 +146,6 @@ class Card12(MadCard):
         super().__init__(12, Config().CARD_CONFIG[12]["point"], 
                          Config().CARD_CONFIG[12]["name"], Lucid02(), Mad12())
         
-
 
 class Card13(MadCard):
     def __init__(self):
@@ -187,6 +185,12 @@ class Card18(MadCard):
     def __init__(self):
         super().__init__(18, Config().CARD_CONFIG[18]["point"], 
                          Config().CARD_CONFIG[18]["name"], Lucid08(), Mad18())
+
+
+class Card20(MadCard):
+    def __init__(self):
+        super().__init__(Config().CARD_CONFIG[20]["point"],
+                         Config().CARD_CONFIG[20]["name"], Mad20(), Mad20())
 
 
 if __name__ == "__main__":

@@ -3,13 +3,14 @@ from game.game import Game
 import random
 from common.logger import Logger
 from game.command import *
+from game.player import Player
 
 
 class Effect:
     def __init__(self, description):
         self.description = description
     
-    def exec(self, player):
+    def exec(self, player:Player):
         print(f"player{player.id} 执行 '{self.description}' 效果")
 
 
@@ -120,14 +121,16 @@ class Lucid08(Effect):
         super().exec(player)
         player.die()
         
-        
-        
+
+# 拉莱耶        
 class Mad10(Effect):
     def __init__(self):
         super().__init__(Config().EFFECT_CONFIG[10]["description"])
         
     def exec(self, player):
         super().exec(player)
+        Game().isDeckReversed = True
+        Game().rlyehPlayer = player
 
 
 # 异教徒
@@ -160,15 +163,22 @@ class Mad12(Effect):
         
     def exec(self, player):
         super().exec(player)
+        Lucid02().exec(player)
+
+        player.skipSanCheck = True
+        PerformTurnCommand()
 
 
-
+# 深潜者
 class Mad13(Effect):
     def __init__(self):
         super().__init__(Config().EFFECT_CONFIG[13]["description"])
         
     def exec(self, player):
         super().exec(player)
+
+        target:Player = Game().choose_other_player(player, lambda p: not p.isMad)
+        target.die()
 
 
 # 《死灵之书》
@@ -178,6 +188,7 @@ class Mad14(Effect):
         
     def exec(self, player):
         super().exec(player)
+        player.protectedByNecro = True
 
 
 # 偷渡虫
@@ -187,27 +198,51 @@ class Mad15(Effect):
         
     def exec(self, player):
         super().exec(player)
+        
+        target:Player = Game().choose_other_player(player)
+        player.hand_deck.put_top(target.hand_deck.get_all())
+        target.hand_deck.put_top(Game().special_deck.get_all())
 
 
+# 兰道尔·蒂林哈斯特
 class Mad16(Effect):
     def __init__(self):
         super().__init__(Config().EFFECT_CONFIG[16]["description"])
         
     def exec(self, player):
         super().exec(player)
+        for target in [p for p in Game().players if p != player]:
+            player.hand_deck.put_top(target.hand_deck.getall())
+        # TODO: should ask
+        for target in [p for p in Game().players if p != player]:
+            target.hand_deck.put_top(player.hand_deck.get_bottom())
 
 
+# 修格斯
 class Mad17(Effect):
     def __init__(self):
         super().__init__(Config().EFFECT_CONFIG[17]["description"])
         
     def exec(self, player):
         super().exec(player)
+        if player.get_hand_card().point >= 5:
+            Game().onlyWinner = player
+            Game().game_over(f"{player.id} played Shoggoth.")
 
 
+# 克苏鲁
 class Mad18(Effect):
     def __init__(self):
         super().__init__(Config().EFFECT_CONFIG[18]["description"])
         
+    def exec(self, player):
+        super().exec(player)
+
+
+# 偷渡虫蛋
+class Mad20(Effect):
+    def __init__(self):
+        super().__init__(Config().EFFECT_CONFIG[20]["description"])
+
     def exec(self, player):
         super().exec(player)
