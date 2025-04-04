@@ -20,7 +20,8 @@ class Config:
                 "name": item["name"],
                 "description": item["description"],
                 "count": item["count"],
-                "isMadCard": item["isMadCard"]
+                "isMadCard": item["isMadCard"],
+                "dieIfDiscard": item["dieIfDiscard"]
             }
             if cfg["isMadCard"]:
                 cfg["madDescription"] = item["madDescription"]

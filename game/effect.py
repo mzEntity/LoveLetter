@@ -35,9 +35,9 @@ class Lucid01(Effect):
             Logger().info(f"无合法目标")
             return
         
-        guess = random.randint(0, 8)
-        card = target.get_hand_card()
+        guess = Game().choose_a_point()
         
+        card = target.get_hand_card()
         if card.point == guess:
             Logger().info(f"猜中了牌的点数({guess}): {card}")
             DieCommand(target).run()
@@ -163,7 +163,8 @@ class Mad11(Effect):
             Logger().info(f"存在点数为1的牌: {card}")
             DieCommand(target).run()
         else:
-            guess = random.randint(0, 8)
+            guess = Game().choose_a_point()
+            
             if card.point == guess:
                 Logger().info(f"猜中了牌的点数({guess}): {card}")
                 DieCommand(target).run()
@@ -221,8 +222,14 @@ class Mad15(Effect):
         if target is None:
             Logger().info(f"无合法目标")
             return
+        
         player.hand_deck.put_top(target.hand_deck.get_all())
         target.hand_deck.put_top(Game().special_deck.get_all())
+        
+        new_card_to_play = Game().choose_a_card_in_hand("请再选择一张牌打出：", player)
+        new_card_to_play[0].exec(player)
+        self.player.add_card_to_discard(new_card_to_play)
+        
 
 
 # 兰道尔·蒂林哈斯特
@@ -232,11 +239,17 @@ class Mad16(Effect):
         
     def exec(self, player):
         super().exec(player)
-        for target in [p for p in Game().survived_players if p != player]:
-            player.hand_deck.put_top(target.hand_deck.get_all())
-        # TODO: should ask
-        for target in [p for p in Game().survived_players if p != player]:
-            target.hand_deck.put_top(player.hand_deck.get_bottom(1))
+        
+        other_players = [p for p in Game().survived_players if p != player and not p.escape]
+        
+        for target in other_players:
+            hand_deck = target.hand_deck
+            Logger().info(f"获得了来自{target}的牌{hand_deck}")
+            player.hand_deck.put_top(hand_deck)
+            
+        for target in other_players:
+            chosen_card = Game().choose_a_card_in_hand(f"请还一张牌给{target}：", player)
+            target.hand_deck.put_top(chosen_card)
 
 
 # 修格斯

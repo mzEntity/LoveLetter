@@ -45,6 +45,13 @@ class Deck:
         self.cards = self.cards[:-count]
         return deck
     
+    def get_index(self, idx):
+        if idx >= len(self.cards):
+            Logger().warning(f"get_index: 你的下标{idx}越界了，只有{len(self.cards)}，这可能会出错……")
+            return None
+        c = self.cards.pop(idx)
+        return Deck([c])
+        
     def get_all(self):
         return self.get_top(len(self.cards))
         

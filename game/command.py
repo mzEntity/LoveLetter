@@ -20,38 +20,41 @@ class PerformTurnCommand(Command):
 
     def run(self):
         self.player.escape = False
-        if Game().over or self.player.dead: 
+        if self.player.dead: 
             return
 
-        if self.player == Game().rlyehPlayer:
-            ask_result = self.askForRlyehPlayer()
-            if ask_result:
-                Game().game_over(f"{self.player}决定提前结束游戏")
-                return
+        self.rlyehStage()
             
-        if Game().over or self.player.dead: 
+        if self.player.dead: 
             return
+        
+        self.sanCheckStage()
+        
+        if self.player.dead:
+            return
+        
+        # draw card
+        DrawToHandCommand(self.player, 1).run()
+        
+        if self.player.dead:
+            return
+        
+        card_to_play = Game().choose_a_card_in_hand("请选择一张牌打出：", self.player)
+        card_to_play[0].exec(self.player)
+        self.player.add_card_to_discard(card_to_play) 
+        
+    def rlyehStage(self):
+        if self.player == Game().rlyehPlayer:
+            ask_result = Game().ask_for_choice("请问你要立刻结束游戏还是继续你的回合？", {"1": "结束游戏", "2": "继续回合"})
+            if ask_result == "1":
+                Game().game_over(f"{self.player}决定提前结束游戏")
+    
+    def sanCheckStage(self):
         if self.player.skipSanCheck:
             self.player.skipSanCheck = False
         else:
             SanCheckCommand(self.player).run()
-        
-        if Game().over or self.player.dead:
-            return
-        # draw card
-        DrawToHandCommand(self.player, 1).run()
-        
-        if Game().over or self.player.dead:
-            return
-        
-        top_deck = self.player.hand_deck.get_top(1)
-        card = top_deck[0]
-        card.exec(self.player)
-        self.player.add_card_to_discard(top_deck)
-        
-    def askForRlyehPlayer(self):
-        return True
-        
+
 
 class DrawToHandCommand(Command):
     def __init__(self, player, count):
@@ -62,7 +65,7 @@ class DrawToHandCommand(Command):
     def run(self):
         deck = Game().public_deck.get_top(self.count)
         if len(deck) < self.count:
-            Game().game_over("牌堆空了")
+            Game().game_over("牌堆不足")
             return
         Logger().info(f"{self.player} 从牌库顶抽取了以下牌：{deck}")
         self.player.hand_deck.put_bottom(deck)
@@ -78,17 +81,20 @@ class DiscardFromHandCommand(Command):
         deck = self.player.hand_deck.get_top(self.count)
         if len(deck) < self.count:
             return
-        containsEight = False
-        for c in deck:
-            if c.point == 8:
-                containsEight = True
-                
+        dieDueToDiscard = False
+        
         Logger().info(f"{self.player} 从手牌中弃置了以下牌：{deck}")
+        
+        for c in deck:
+            if c.dieIfDiscard:
+                dieDueToDiscard = True
+                Logger().info(f"{self.player} 将要因弃置了牌{c}而死")
         self.player.add_card_to_discard(deck)
         
-        if containsEight:
+        if dieDueToDiscard:
             DieCommand(self.player).run()
-        
+    
+    
     
 
 class DiscardFromPublicCommand(Command):
@@ -100,7 +106,7 @@ class DiscardFromPublicCommand(Command):
     def run(self):
         deck = Game().public_deck.get_top(self.count)
         if len(deck) < self.count:
-            Game().game_over("牌堆空了")
+            Game().game_over("牌堆不足")
             return
         Logger().info(f"{self.player} 从牌堆顶弃置了以下牌：{deck}")
         self.player.add_card_to_discard(deck)
@@ -115,8 +121,11 @@ class ExchangeHandCommand(Command):
     def run(self):
         deck1 = self.player1.hand_deck.get_all()
         deck2 = self.player2.hand_deck.get_all()
+        Logger().info(f"{self.player1} 从 {self.player2}处获得牌：{deck2}")
+        Logger().info(f"{self.player2} 从 {self.player1}处获得牌：{deck1}")
         self.player1.hand_deck.put_top(deck2)
         self.player2.hand_deck.put_top(deck1)
+        
         
 
 class SanCheckCommand(Command):
@@ -134,8 +143,9 @@ class SanCheckCommand(Command):
         Logger().info(f"{self.player} 需要进行 {mad_count} 张神智检定")
         deck = Game().public_deck.get_top(mad_count)
         if len(deck) < mad_count:
-            Game().game_over("牌堆空了")
+            Game().game_over("牌堆不足")
             return
+        
         Logger().info(f"判定牌为：{deck}")
         hasMad = False
         for c in deck:
@@ -153,16 +163,18 @@ class DieCommand(Command):
         
     def run(self):
         if self.player.protectedByNecro:
-            Logger().info(f"{self.player} 逃避死亡")
+            Logger().info(f"{self.player}逃脱死亡")
             return
         Logger().info(f"{self.player}死亡")
         deck = self.player.hand_deck.get_all()
-        self.player.die()
-        Game().survived_players.remove(self.player)
+        
         Logger().info(f"{self.player} 从手牌中弃置了以下牌：{deck}")
         self.player.add_card_to_discard(deck)
         
+        self.player.die()
+        Game().survived_players.remove(self.player)
         if len(Game().survived_players) == 1:
+            Game().onlyWinner = Game().survived_players[0]
             Game().game_over("仅剩一人存活")
         
         

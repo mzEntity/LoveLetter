@@ -3,14 +3,13 @@ from common.singleton import singleton
 
 from game.player import Player
 from common.logger import Logger
-
+from game.interact import askForNumber, askForChoice
 
 @singleton
 class Game:
     def __init__(self):
         self.public_deck = Deck()
         self.removed = Deck()
-        self.over = False
         
         self.players = []
         self.survived_players = []
@@ -36,7 +35,6 @@ class Game:
 
             
     def game_over(self, reason):
-        self.over = True
         Logger().info(f"游戏结束: {reason}")
         raise GameOverException(reason)
         
@@ -45,44 +43,65 @@ class Game:
         
             
     def choose_any_player(self, player, filter = None):
-        current_player_id = player.id
-        for i in range(self.player_count):
-            if i == current_player_id:
-                continue
-            chosen = self.players[i]
+        all_list = list(range(self.player_count))
+        available_list = []
+        for i in all_list:
+            target_player = self.players[i]
             if filter is not None:
-                if not filter(chosen):
-                    Logger().info(f"准备选择player{chosen.id} 但不是合法目标") 
-            if chosen.escape:
-                Logger().info(f"准备选择player{chosen.id} 但不可被选中") 
+                if not filter(target_player):
+                    continue
+            if target_player.escape or target_player.dead:
                 continue
-            elif chosen.dead:
-                Logger().info(f"准备选择player{chosen.id} 但已经出局") 
-                continue
-            Logger().info(f"选择了player{chosen.id}")
-            return chosen
-        Logger().info(f"选择了player{player.id}")
-        return player
+            available_list.append(i)
+            
+        if len(available_list) == 0:
+            Logger().info("没有任何玩家可以被选择")
+            return None
+            
+        chosen_id = askForNumber("请选择一位目标玩家：", available_list)
+        chosen_player = self.players[chosen_id]
+        
+        Logger().info(f"选择了{chosen_player}")
+        return chosen_player
 
     def choose_other_player(self, player, filter = None):
         current_player_id = player.id
-        for i in range(self.player_count):
-            if i == current_player_id:
+        all_list = list(range(self.player_count))
+        available_list = []
+        for i in all_list:
+            if current_player_id == i:
                 continue
-            chosen = self.players[i]
-            if filter:
-                if not filter(chosen):
-                    Logger().info(f"准备选择player{chosen.id} 但不是合法目标") 
-            if chosen.escape:
-                Logger().info(f"准备选择player{chosen.id} 但不可被选中") 
+            target_player = self.players[i]
+            if filter is not None:
+                if not filter(target_player):
+                    continue
+            if target_player.escape or target_player.dead:
                 continue
-            elif chosen.dead:
-                Logger().info(f"准备选择player{chosen.id} 但已经出局") 
-                continue
-            Logger().info(f"选择了player{chosen.id}")
-            return chosen
-        Logger().info(f"无法选择任何角色")
-        return None
+            available_list.append(i)
+        
+        if len(available_list) == 0:
+            Logger().info("没有任何玩家可以被选择")
+            return None
+        
+        chosen_id = askForNumber("请选择一位目标玩家：", available_list)
+        chosen_player = self.players[chosen_id]
+        
+        Logger().info(f"选择了{chosen_player}")
+        return chosen_player
+    
+    def ask_for_choice(self, prompt, available_choices_dict):
+        return askForChoice(prompt, available_choices_dict)
+    
+    def choose_a_point(self):
+        return askForNumber("请选择牌的点数：", [0, 2, 3, 4, 5, 6, 7, 8])
+    
+    def choose_a_card_in_hand(self, prompt, player):
+        card_list = []
+        for c in player.hand_deck:
+            card_list.append(c)
+        choice = self.ask_for_choice(prompt, {str(idx+1): card for idx, card in enumerate(card_list)})
+        deck_chosen = player.hand_deck.get_index(int(choice) - 1)
+        return deck_chosen
     
 class GameOverException(Exception):
     def __init__(self, msg):

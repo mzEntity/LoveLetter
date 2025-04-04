@@ -22,7 +22,7 @@ class GameManager:
         try:
             for i in range(self.player_count):
                 DrawToHandCommand(self.game.players[i], 1).run()
-            while not self.game.over:
+            while True:
                 self.one_round()
         except GameOverException as e:
             if self.game.onlyWinner is None:
@@ -55,8 +55,6 @@ class GameManager:
     def one_round(self):
         Logger().info(f"新的一轮开始...")
         for idx, player in enumerate(self.game.players):
-            if self.game.over:
-                break
             if player.dead:
                 Logger().info(f"{player}已死亡，跳过回合")
                 continue
@@ -64,10 +62,8 @@ class GameManager:
             
             
     def one_turn(self, player):
-        id = player.id
-        print(f"player {id} start")
+        Logger().info(f"{player}的回合开始...")
         PerformTurnCommand(player).run()
-        # if game ends, calc result now
     
     
 if __name__ == "__main__":
